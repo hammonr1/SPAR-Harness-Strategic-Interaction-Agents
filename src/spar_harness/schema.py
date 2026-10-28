@@ -69,11 +69,24 @@ class ContractOffer(BaseModel):
     transfer: float = Field(ge=0.0)  # t, paid by the other to the bearer on honoring
 
 
+class IndivisibleOffer(BaseModel):
+    """A proposal over one good that cannot be split. Which fields are used
+    depends on the game's version: strict sets the taker, lottery sets
+    alpha's chance, payment sets the taker and what it pays the other."""
+
+    kind: Literal["proposal"] = "proposal"
+    taker: PlayerId | None = None  # who gets the good (strict and payment)
+    alpha_chance: float | None = Field(default=None, ge=0.0, le=1.0)  # lottery
+    payment: float = Field(default=0.0, ge=0.0, le=1.0)  # from the taker to the other
+
+
 class Choice(BaseModel):
     kind: Literal["accept", "reject", "fight", "walk_away", "honor", "renege"]
 
 
-Action = Annotated[Offer | ContractOffer | Choice, Field(discriminator="kind")]
+Action = Annotated[
+    Offer | ContractOffer | IndivisibleOffer | Choice, Field(discriminator="kind")
+]
 
 
 class Move(BaseModel):
@@ -85,7 +98,8 @@ class Move(BaseModel):
     )
 
 
-GameId = Literal["crisis_bargaining", "contract_dynamics"]
+GameId = Literal["crisis_bargaining", "contract_dynamics", "indivisible_good"]
+IndivisibleVersion = Literal["strict", "lottery", "payment"]  # what an offer says
 Role = Literal["proposer", "responder", "bearer", "other"]
 ActionKind = Literal["offer", "response", "message", "decision"]
 
@@ -112,8 +126,10 @@ class StageSpec(BaseModel):
 class GameSpec(BaseModel):
     game_id: GameId
     stages: list[StageSpec]
-    status_quo: float = 0.0  # crisis bargaining: alpha's share without a deal
+    status_quo: float = 0.0  # crisis bargaining: alpha's share without a deal;
+    # indivisible good: each player's payoff without a deal
     contract: ContractParams | None = None  # contract dynamics only
+    version: IndivisibleVersion | None = None  # indivisible good only
 
 
 class HorizonTreatment(BaseModel):
@@ -154,6 +170,7 @@ class Briefing(BaseModel):
     private_fields: set[TypeField]
     status_quo: float
     termination: TerminationSpec | None  # None if the horizon is unknown
+    version: IndivisibleVersion | None = None  # indivisible good only
 
 
 class ContractBriefing(BaseModel):
