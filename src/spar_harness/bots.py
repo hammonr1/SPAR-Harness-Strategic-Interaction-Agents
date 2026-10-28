@@ -17,6 +17,7 @@ from spar_harness.crisis_bargaining import (
     possible_opponent_types,
     reservation_against,
 )
+from spar_harness.indivisible_good import deal_value
 from spar_harness.referee import Player
 from spar_harness.schema import (
     Briefing,
@@ -24,6 +25,8 @@ from spar_harness.schema import (
     ContractBriefing,
     ContractOffer,
     ContractParams,
+    IndivisibleOffer,
+    IndivisibleVersion,
     Move,
     Observation,
     Offer,
@@ -90,13 +93,17 @@ def _truthful_declaration(
 
 
 def _risk_return_share(
-    me: PlayerId, own: PrivateType, opponents: list[PrivateType]
+    me: PlayerId,
+    own: PrivateType,
+    opponents: list[PrivateType],
+    candidates: list[float] | None = None,
 ) -> float:
     """The share to keep that maximizes expected payoff against the opponent prior.
 
     Assumes each possible opponent accepts exactly when its share reaches its own
     reservation value. Expected payoff only changes at those thresholds, so the
-    best offer is one of them.
+    best offer is one of them, unless the game restricts the offers that can be
+    made: then `candidates` lists the shares that may be conceded.
     """
     outcomes = sorted(
         (
@@ -116,9 +123,10 @@ def _risk_return_share(
         )
         return (accepted * (1 - offered) + rejected_fight) / len(outcomes)
 
-    candidates = sorted(
-        {min(max(threshold, 0.0), 1.0) for threshold in thresholds} | {0.0}
-    )
+    if candidates is None:
+        candidates = sorted(
+            {min(max(threshold, 0.0), 1.0) for threshold in thresholds} | {0.0}
+        )
     best_payoff = max(expected_payoff(offered) for offered in candidates)
     # Among (near-)equally good offers, make the most generous: it risks the least war.
     best_offer = max(
@@ -131,6 +139,57 @@ def _risk_return_share(
 
 def _other(player: PlayerId) -> PlayerId:
     return "beta" if player == "alpha" else "alpha"
+
+
+def indivisible_bot() -> Player:
+    """The Equilibrium Bot over the offers of the indivisible good game.
+
+    As proposer it makes the offer of the game's version that maximizes its
+    expected payoff given the prior over the opponent's type, assuming an
+    opponent accepts exactly when its deal value reaches its own fight value
+    and that a rejection is a fight: it claims or concedes the good (strict),
+    searches the chance (lottery) or the payment and who takes the good
+    (payment). As responder it accepts any deal worth at least its (expected)
+    fight value and fights otherwise. It declares its private fields
+    truthfully whenever it may, and never sends messages.
+    """
+    briefing: Briefing | None = None
+
+    async def play(observation: Observation, context: PhaseContext) -> Move:
+        nonlocal briefing
+        if observation.briefing is not None:
+            briefing = observation.briefing
+        me = observation.recipient
+        declared_type = _truthful_declaration(briefing.own_type, context)
+        if context.role == "proposer":
+            opponents = possible_opponent_types(briefing)
+            # strict: the good goes whole to one side, so a player's value is 0 or 1
+            candidates = [0.0, 1.0] if briefing.version == "strict" else None
+            my_value = _risk_return_share(me, briefing.own_type, opponents, candidates)
+            offer = _offer_worth(briefing.version, me, my_value)
+            return Move(action=offer, declared_type=declared_type)
+        offer = observation.opponent_moves[-1].action
+        reservation = expected_reservation_value(me, briefing)
+        accepts = deal_value(offer, me) >= reservation - TOLERANCE
+        kind = "accept" if accepts else "fight"
+        return Move(action=Choice(kind=kind), declared_type=declared_type)
+
+    return play
+
+
+def _offer_worth(
+    version: IndivisibleVersion, me: PlayerId, my_value: float
+) -> IndivisibleOffer:
+    """The offer of the version worth `my_value` to me and 1 - my_value to the
+    opponent. In the payment version the player with the larger value takes the
+    good and pays the other its value."""
+    if version == "lottery":
+        return IndivisibleOffer(
+            alpha_chance=my_value if me == "alpha" else 1 - my_value
+        )
+    if my_value >= 0.5:
+        return IndivisibleOffer(taker=me, payment=1 - my_value)
+    return IndivisibleOffer(taker=_other(me), payment=my_value)
 
 
 def rational_contract_bot() -> Player:
