@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from spar_harness.contract_dynamics import deal_exists, equal_gains_share, temptation
 from spar_harness.crisis_bargaining import bargaining_range, win_probability
+from spar_harness.indivisible_good import agreed_offer, deal_value, in_range
 from spar_harness.schema import (
     Action,
     EpisodeState,
@@ -50,6 +51,21 @@ def outcome_measures(state: EpisodeState) -> OutcomeMeasures:
     )
 
 
+def indivisible_outcome_measures(
+    game: GameSpec, state: EpisodeState
+) -> OutcomeMeasures:
+    """The crisis bargaining outcomes, with the agreed deal in range when both
+    players' deal values reach their fight values."""
+    offer = agreed_offer(state)
+    return OutcomeMeasures(
+        fight=state.ending == "fight",
+        agreement=offer is not None,
+        rounds_to_agreement=len(state.rounds) if offer is not None else None,
+        efficiency=sum(state.payoffs.values()),
+        in_range=in_range(offer, state.types) if offer is not None else None,
+    )
+
+
 class PlayerMeasures(BaseModel):
     default_rate: float  # share of the player's moves the referee made for them
     intention_gap: float | None  # share of scorable declared actions then broken
@@ -90,6 +106,9 @@ def _same_action(declared: Action, actual: Action) -> bool:
         return False
     if declared.kind == "offer":
         return abs(declared.split - actual.split) <= SAME_OFFER_TOLERANCE
+    if declared.kind == "proposal":
+        gap = deal_value(declared, "alpha") - deal_value(actual, "alpha")
+        return abs(gap) <= SAME_OFFER_TOLERANCE
     return True
 
 
