@@ -9,7 +9,7 @@ import random
 from collections.abc import Awaitable, Callable
 from typing import Literal
 
-from spar_harness import contract_dynamics, crisis_bargaining
+from spar_harness import contract_dynamics, crisis_bargaining, indivisible_good
 from spar_harness.priors import draw_types
 from spar_harness.schema import (
     Briefing,
@@ -42,27 +42,35 @@ TALK_FIELDS: tuple[TalkField, ...] = ("message", "declared_action", "declared_ty
 ALLOWED_ACTIONS = {
     "crisis_bargaining": crisis_bargaining.ALLOWED_ACTIONS,
     "contract_dynamics": contract_dynamics.ALLOWED_ACTIONS,
+    "indivisible_good": indivisible_good.ALLOWED_ACTIONS,
 }
 BRIEFINGS = {
     "crisis_bargaining": crisis_bargaining.briefing,
     "contract_dynamics": contract_dynamics.briefing,
+    "indivisible_good": indivisible_good.briefing,
 }
 ENDING_RULES = {
     "crisis_bargaining": crisis_bargaining.ending_after_move,
     "contract_dynamics": contract_dynamics.ending_after_move,
+    "indivisible_good": indivisible_good.ending_after_move,
 }
 PAYOFF_MODELS = {
     "crisis_bargaining": crisis_bargaining.episode_payoffs,
     "contract_dynamics": contract_dynamics.episode_payoffs,
+    "indivisible_good": indivisible_good.episode_payoffs,
 }
 DEFAULT_MOVES = {
     "crisis_bargaining": crisis_bargaining.default_move,
     "contract_dynamics": contract_dynamics.default_move,
+    "indivisible_good": indivisible_good.default_move,
 }
 # nature's moves before each stage; games without any are absent
 BEFORE_STAGE = {"contract_dynamics": contract_dynamics.before_stage}
 # game-specific rules a move must satisfy; they return a problem or None
-MOVE_CHECKS = {"contract_dynamics": contract_dynamics.move_problem}
+MOVE_CHECKS = {
+    "contract_dynamics": contract_dynamics.move_problem,
+    "indivisible_good": indivisible_good.move_problem,
+}
 # players for roles other than proposer and responder
 ACTOR_RULES = {"contract_dynamics": contract_dynamics.actor_for}
 
