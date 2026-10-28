@@ -27,6 +27,8 @@ from spar_harness.schema import (
     TerminationSpec,
 )
 
+IN_RANGE_TOLERANCE = 1e-9  # a deal exactly at a fight value counts as in range
+
 
 def deal_value(offer: IndivisibleOffer, player: PlayerId) -> float:
     """The player's payoff if the offer is accepted.
@@ -53,7 +55,8 @@ def in_range(offer: IndivisibleOffer, types: dict[PlayerId, PrivateType]) -> boo
     """Whether both players weakly prefer the deal to fighting."""
     fights = fight_values(types)
     return all(
-        deal_value(offer, player) >= fights[player] for player in ("alpha", "beta")
+        deal_value(offer, player) >= fights[player] - IN_RANGE_TOLERANCE
+        for player in ("alpha", "beta")
     )
 
 

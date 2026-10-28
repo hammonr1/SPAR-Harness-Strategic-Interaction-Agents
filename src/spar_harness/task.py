@@ -23,6 +23,7 @@ from inspect_ai.solver import Generate, Solver, TaskState, solver
 
 from spar_harness.bots import (
     equilibrium_bot,
+    indivisible_bot,
     random_bot,
     rational_contract_bot,
     scripted_contract_bot,
@@ -30,12 +31,14 @@ from spar_harness.bots import (
 from spar_harness.contract_presenter import CONTRACT_PRESENTER
 from spar_harness.crisis_bargaining import crisis_bargaining_game
 from spar_harness.crisis_presenter import CRISIS_PRESENTER
+from spar_harness.indivisible_presenter import INDIVISIBLE_PRESENTERS
 from spar_harness.measures import outcome_measures, player_measures
-from spar_harness.model_player import ProbeResponse, model_player
+from spar_harness.model_player import Presenter, ProbeResponse, model_player
 from spar_harness.referee import Player, run_episode
 from spar_harness.schema import (
     EpisodeConfig,
     EpisodeState,
+    GameSpec,
     HorizonTreatment,
     PlayerId,
     PrivateInfoTreatment,
@@ -51,6 +54,8 @@ Controller = Literal[
     # crisis bargaining bots
     "equilibrium",
     "random",
+    # indivisible good bot
+    "indivisible_bot",
     # contract dynamics bots
     "rational",
     "always_honor",
@@ -168,7 +173,13 @@ def referee() -> Solver:
 PRESENTERS = {
     "crisis_bargaining": CRISIS_PRESENTER,
     "contract_dynamics": CONTRACT_PRESENTER,
+    "indivisible_good": INDIVISIBLE_PRESENTERS,  # one per version
 }
+
+
+def _presenter(game: GameSpec) -> Presenter:
+    presenter = PRESENTERS[game.game_id]
+    return presenter[game.version] if isinstance(presenter, dict) else presenter
 
 
 def _player(
@@ -180,10 +191,11 @@ def _player(
     appeal: str,
 ) -> Player:
     if controller == "model":
-        presenter = PRESENTERS[config.game.game_id]
-        return model_player(get_model(role=seat), probes, presenter)
+        return model_player(get_model(role=seat), probes, _presenter(config.game))
     if controller == "equilibrium":
         return equilibrium_bot()
+    if controller == "indivisible_bot":
+        return indivisible_bot()
     if controller == "random":
         return random_bot(seed=2 * config.seed + (0 if position == "alpha" else 1))
     if controller == "rational":
