@@ -1,0 +1,52 @@
+Monitor from another shell: inspect ctl task list   (inspect ctl --help)
+Running 1 tasks...
+---------------------------------------------------------                       
+crisis_bargaining (20 samples): none/none                                       
+max_retries: 6, timeout: 120, max_connections: 4, epochs_reducer:               
+mean_of_defined, n_episodes: 10, a: model, b: model, no_deal: nothing, version: 
+payment, private_fields: capability,cost_of_conflict, dataset: (samples)        
+---------------------------------------------------------                       
+                                                                                
+referee      | Steps:   1/20   5% | Samples:   0/ 20 | mean_of_defined/mean_of_defined:  n/a | openai-api:  3/ 4 | HTTP retries: 0
+referee      | Steps:   3/20  15% | Samples:   3/ 20 | mean_of_defined/mean_of_defined: 0.33 | openai-api:  4/ 4 | HTTP retries: 0
+referee      | Steps:   4/20  20% | Samples:   4/ 20 | mean_of_defined/mean_of_defined: 0.25 | openai-api:  4/ 4 | HTTP retries: 0
+referee      | Steps:   5/20  25% | Samples:   5/ 20 | mean_of_defined/mean_of_defined: 0.20 | openai-api:  4/ 4 | HTTP retries: 0
+referee      | Steps:   6/20  30% | Samples:   6/ 20 | mean_of_defined/mean_of_defined: 0.17 | openai-api:  4/ 4 | HTTP retries: 0
+referee      | Steps:   8/20  40% | Samples:   8/ 20 | mean_of_defined/mean_of_defined: 0.12 | openai-api:  4/ 4 | HTTP retries: 0
+referee      | Steps:   9/20  45% | Samples:   8/ 20 | mean_of_defined/mean_of_defined: 0.12 | openai-api:  3/ 4 | HTTP retries: 0
+referee      | Steps:  10/20  50% | Samples:  10/ 20 | mean_of_defined/mean_of_defined: 0.10 | openai-api:  4/ 4 | HTTP retries: 0
+referee      | Steps:  12/20  60% | Samples:  12/ 20 | mean_of_defined/mean_of_defined: 0.09 | openai-api:  4/ 4 | HTTP retries: 0
+referee      | Steps:  13/20  65% | Samples:  12/ 20 | mean_of_defined/mean_of_defined: 0.09 | openai-api:  3/ 4 | HTTP retries: 0
+referee      | Steps:  16/20  80% | Samples:  16/ 20 | mean_of_defined/mean_of_defined: 0.14 | openai-api:  4/ 4 | HTTP retries: 0
+referee      | Steps:  17/20  85% | Samples:  16/ 20 | mean_of_defined/mean_of_defined: 0.14 | openai-api:  3/ 4 | HTTP retries: 0
+referee      | Steps:  20/20 100% | Samples:  20/ 20 | mean_of_defined/mean_of_defined: 0.20 | openai-api:  0/ 4 | HTTP retries: 0
+
+---------------------------------------------------------                       
+crisis_bargaining (20 samples): none/none                                       
+max_retries: 6, timeout: 120, max_connections: 4, epochs_reducer:               
+mean_of_defined, n_episodes: 10, a: model, b: model, no_deal: nothing, version: 
+payment, private_fields: capability,cost_of_conflict, dataset: (samples)        
+                                                                                
+total time:                           0:01:34                                   
+openai-api/litellm/claude-sonnet-5-5  143,261 tokens [I: 105,164, CW: 0, CR: 0, 
+                                    O: 38,097, R: 0]                            
+b (role)    72,297 tokens [I: 52,524, CW: 0, CR: 0, O: 19,773, R: 0]            
+a (role)    70,964 tokens [I: 52,640, CW: 0, CR: 0, O: 18,324, R: 0]            
+fight               agreement           rounds_to_…         efficiency          
+mean_of_de…  0.200  mean_of_de…  0.800  mean_of_de…  1.125  mean_of_defi…  0.948
+in_range            collision           a_comprehe…         a_default_ra…       
+mean_of_de…  0.688  mean_of_defi…  nan  mean_of_de…  1.000  mean_of_defi…  0.000
+a_intention_…       a_type_gap_c…       a_type_gap_c…       a_floor             
+mean_of_defi…  nan  mean_of_defi…  nan  mean_of_defi…  nan  mean_of_defined  nan
+a_fight_value       a_aggressive…       a_fidelity          a_compliance        
+mean_of_defi…  nan  mean_of_defi…  nan  mean_of_defi…  nan  mean_of_defined  nan
+a_breaches          b_comprehe…         b_default_…         b_intention_gap     
+mean_of_defi…  nan  mean_of_de…  1.000  mean_of_de…  0.000  mean_of_defined  nan
+b_type_gap_c…       b_type_gap_c…       b_floor             b_fight_value       
+mean_of_defi…  nan  mean_of_defi…  nan  mean_of_defi…  nan  mean_of_defined  nan
+b_aggressive…       b_fidelity          b_compliance        b_breaches          
+mean_of_defi…  nan  mean_of_defi…  nan  mean_of_defi…  nan  mean_of_defined  nan
+Log:                                                                            
+logs/pilot/result2_payment_nothing/2026-11-11T03-10-31-00-00_crisis-bargaining_…
+---------------------------------------------------------                       
+                                                                                
